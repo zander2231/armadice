@@ -96,25 +96,14 @@ class Black(Die):
         self.sides = [ Hit(), Hit(), Hit(), Hit(), HitCrit(), HitCrit(), Miss(), Miss()]
 
 class Upgrade(object):
-    def modifyDice(self, dice):
-        return dice
-
-    def modifyRoll(self, die, side):
-        return side
-
     def modifyResult(self, result):
         return result
 
-class FirstRoll(Upgrade):
-    def modifyRoll(self, die, side):
-        return die.chooseSide()    
-
 class SW7(Upgrade):
-    def modifyRoll(self, die, side):
-        if isinstance(die, Blue) and side.damage() == 0:
-            return Hit()
-        else:
-            return side
+    def modifyResult(self, result):
+        for side in result.sides[Blue]:
+            if side.damage() == 0:
+                side.setTo(Hit())
 
 class DualTurbo(Upgrade):
     def modifyResult(self, result):
@@ -126,7 +115,8 @@ class OrdinanceExp(Upgrade):
     def modifyResult(self, result):
         for side in result.sides[Black()]:
             if side.damage() == 0:
-                side.setTo(die.chooseSide())
+                side.setTo(Black().chooseSide())
+        return result
 
 class H9(Upgrade):
     def modifyResult(self,result):
@@ -181,20 +171,14 @@ class Result(object):
 class Attack(object):
     def __init__(self):
         self.dice = []
-        self.upgrades = [FirstRoll()]
+        self.upgrades = []
 
     def generateResult(self):
         result = Result()
         dice = self.dice[:]
 
-        for upgrade in self.upgrades:
-            dice = upgrade.modifyDice(dice)
-
         for die in dice:
-            side = None
-            for upgrade in self.upgrades:
-                side = upgrade.modifyRoll(die, side)
-            result.add(die, side)
+            result.add(die, die.chooseSide())
 
         for upgrade in self.upgrades:
             result = upgrade.modifyResult(result)
@@ -267,14 +251,14 @@ def main():
     #read in command line args
     #generate attack
     attack = Attack()
-    attack.addDie(Red(), 2)
-    attack.addDie(Blue(), 1)
-    attack.addUpgrade(SW7())
+    # attack.addDie(Red(), 2)
+    # attack.addDie(Blue(), 1)
+    # attack.addUpgrade(SW7())
     # attack.addUpgrade(DualTurbo())
 
     # attack.addDie(Blue(), 2)
-    # attack.addDie(Black(), 3)
-    # attack.addUpgrade(OrdinanceExp())
+    attack.addDie(Black(), 3)
+    attack.addUpgrade(OrdinanceExp())
 
     #generate rolls histogram for number of iterations
     results = Results()

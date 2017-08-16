@@ -183,58 +183,21 @@ class TestAttackWithResult(unittest.TestCase):
         result = self.testObj.generateResult()
         self.assertEqual(result.accuracyCount(), 2)
 
-    def testAddUpgradeLetsUpgradeKnowAboutFinalDieRoll(self):
-        upgrade = FakeUpgrade()
-        self.testObj.addUpgrade(upgrade)
-        self.testObj.addDie(AllHits())
-        self.testObj.addDie(AllCrits())
-        self.testObj.generateResult()
-
-        self.assertIsInstance(upgrade.rolledDie[0], AllHits)
-        self.assertTrue(checkSides(upgrade.rolledSide[0], Hit()))
-        self.assertIsInstance(upgrade.rolledDie[1], AllCrits)
-        self.assertTrue(checkSides(upgrade.rolledSide[1], Crit()))
-
     def testAddUpgradeCanModifyResult(self):
         upgrade = FakeUpgrade()
-        upgrade.result = Crit()
+        upgrade.result.add(Blue(), Crit())
         self.testObj.addUpgrade(upgrade)
         self.testObj.addDie(AllHits())
         result = self.testObj.generateResult()
 
         self.assertEqual(result.hasCrit(), True)
 
-    def testUpgradeCanModifyStartingDice(self):
-        upgrade = FakeUpgrade()
-        upgrade.dice = [AllCrits(), AllHits()]
-        self.testObj.addUpgrade(upgrade)
-        self.testObj.addDie(Blue())
-
-        result = self.testObj.generateResult()
-        self.assertEqual(result.totalDamage(), 2)
-
 class FakeUpgrade(object):
     def __init__(self):
-        self.dice = None;
-        self.rolledDie = []
-        self.rolledSide = []
-        self.result = Hit()
-
-    def modifyDice(self, dice):
-        if self.dice is None:
-            return dice
-
-        d = self.dice
-        self.dice = dice
-        return d
-
-    def modifyRoll(self, die, side):
-        self.rolledDie.append(die)
-        self.rolledSide.append(side)
-        return self.result
+        self.result = Result()
 
     def modifyResult(self, result):
-        return result
+        return self.result
 
 class TestDualTurbo(unittest.TestCase):
     def setUp(self):
