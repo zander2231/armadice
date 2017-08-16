@@ -6,7 +6,7 @@ class DiceRandom(object):
     def rollSide(self):
         return DiceRandom.instance.randint(0,7)
 
-class Miss(object):
+class Side(object):
     def __init__(self):
         self.hit = 0
         self.crit = 0
@@ -22,37 +22,46 @@ class Miss(object):
     def isCrit(self):
         return self.crit > 0
 
-class Hit(Miss):
-    def __init__(self):
-        Miss.__init__(self)
-        self.good = 2
-        self.hit = 1
-        self.good = 1
+    def setTo(self, side):
+        self.hit = side.hit
+        self.crit = side.crit
+        self.acc = side.acc
+        self.good = side.good
 
-class Double(Miss):
-    def __init__(self):
-        Miss.__init__(self)
-        self.good = 4
-        self.hit = 2
+def Miss():
+    return Side()
 
-class Crit(Miss):
-    def __init__(self):
-        Miss.__init__(self)
-        self.good = 3
-        self.crit = 1
+def Hit():
+    side = Side()
+    side.good = 2
+    side.hit = 1
+    side.good = 1
+    return side
 
-class Acc(Miss):
-    def __init__(self):
-        Miss.__init__(self)
-        self.good = 1
-        self.acc = 1
+def Double():
+    side = Side()
+    side.good = 4
+    side.hit = 2
+    return side
 
-class HitCrit(Miss):
-    def __init__(self):
-        Miss.__init__(self)
-        self.good = 5
-        self.crit = 1
-        self.hit = 1
+def Crit():
+    side = Side()
+    side.good = 3
+    side.crit = 1
+    return side
+
+def Acc():
+    side = Side()
+    side.good = 1
+    side.acc = 1
+    return side
+
+def HitCrit():
+    side = Side()
+    side.good = 5
+    side.crit = 1
+    side.hit = 1
+    return side
 
 class Die(object):
     def averageDamage(self):
@@ -64,6 +73,12 @@ class Die(object):
     def chooseSide(self):
         side = DiceRandom().rollSide()
         return self.sides[side]
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __eq__(self, other):
+        return type(self).__name__ == type(other).__name__ 
 
 class Red(Die):
     def __init__(self):
@@ -102,54 +117,65 @@ class SW7(Upgrade):
             return side
 
 class DualTurbo(Upgrade):
-    def modifyDice(self, dice):
-        dice.append(Red())
-        return dice
-
     def modifyResult(self, result):
+        result.add(Red(), Red().chooseSide())
         result.removeLowestSide()
         return result
 
 class OrdinanceExp(Upgrade):
-    def modifyRoll(self, die, side):
-        if isinstance(die, Black) and side.damage() == 0:
-            return die.chooseSide()
-        else:
-            return side
+    def modifyResult(self, result):
+        for side in result.sides[Black()]:
+            if side.damage() == 0:
+                side.setTo(die.chooseSide())
 
 class H9(Upgrade):
     def modifyResult(self,result):
-        pass
+        del result.sides[Blue()][0]
+        result.add(Blue(), Acc())
 
 class Result(object):
     def __init__(self):
-        self.sides = []
+        self.sides = {}
 
-    def add(self, side):
-        self.sides.append(side)
+    def add(self, die, side):
+        if not die in self.sides.keys():
+            self.sides[die] = []
+        self.sides[die].append(side)
 
     def totalDamage(self):
         total = 0
-        for side in self.sides:
-            total += side.damage()
+        for die, sides in self.sides.items():
+            for side in sides:
+                total += side.damage()
 
         return total
 
     def hasCrit(self):
-        for side in self.sides:
-            if side.isCrit():
-                return True
+        for die, sides in self.sides.items():
+            for side in sides:
+                if side.isCrit():
+                    return True
         return False
 
     def removeLowestSide(self):
-        std = sorted(self.sides, key=lambda side: side.good)
-        del std[0]
-        self.sides = std
+        lowDie = None
+        lowSides = [HitCrit()]
+
+        for die, sides in self.sides.items():
+            std = sorted(sides, key=lambda side: side.good)
+            if std[0].good < lowSides[0].good:
+                lowDie = die
+                lowSides = std
+
+        if lowDie is not None:
+            del lowSides[0]
+            self.sides[lowDie] = lowSides
 
     def accuracyCount(self):
         total = 0
-        for side in self.sides:
-            total += side.accuracy()
+        for die, sides in self.sides.items():
+            for side in sides:
+                total += side.accuracy()
         return total
 
 class Attack(object):
@@ -168,7 +194,7 @@ class Attack(object):
             side = None
             for upgrade in self.upgrades:
                 side = upgrade.modifyRoll(die, side)
-            result.add(side)
+            result.add(die, side)
 
         for upgrade in self.upgrades:
             result = upgrade.modifyResult(result)

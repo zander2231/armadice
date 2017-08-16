@@ -8,6 +8,14 @@ class FakeRandom(object):
     def randint(self, low, high):
         return self.choice
 
+def checkSides(sideOne, sideTwo):
+    equal  = True 
+    equal = equal and sideOne.hit == sideTwo.hit
+    equal = equal and sideOne.crit == sideTwo.crit
+    equal = equal and sideOne.acc == sideTwo.acc
+    equal = equal and sideOne.good == sideTwo.good
+    return equal
+
 class AllHits(Die):
     def __init__(self):
         Die.__init__(self)
@@ -50,7 +58,7 @@ class TestRedDice(unittest.TestCase):
 
     def testChooseSide(self):
         self.random.choice = 0
-        self.assertIsInstance(self.die.chooseSide(), Hit)
+        self.assertTrue(checkSides(self.die.chooseSide(), Hit()))
 
 class TestBlueDice(TestRedDice):
     def setUp(self):
@@ -91,6 +99,34 @@ class TestSides(unittest.TestCase):
         self.assertEqual(HitCrit().isCrit(), True)
         self.assertEqual(HitCrit().accuracy(), 0)
 
+class TestResult(unittest.TestCase):
+    def testLowDieDropped(self):
+        self.checkDrop(Crit(), Hit(), 1, True)
+        self.checkDrop(Miss(), Hit(), 1, False)
+        self.checkDrop(Miss(), Acc(), 0, False)
+        self.checkDrop(Double(), Hit(), 2, False)
+        self.checkDrop(Double(), HitCrit(), 2, True)
+
+    def checkDrop(self, sideOne, sideTwo, damage, crit):
+        result = Result()
+        result.add(Blue(),sideOne)
+        result.add(Blue(),sideTwo)
+        result.removeLowestSide()
+        self.assertEqual(result.totalDamage(), damage)
+        self.assertEqual(result.hasCrit(), crit)
+
+    def testRemoveLowSideWorksAcrossTypes(self):
+        result = Result()
+        result.add(Blue(),Crit())
+        result.add(Red(),Double())
+        result.removeLowestSide()
+        self.assertEqual(result.totalDamage(), 2)
+        self.assertEqual(result.hasCrit(), False)
+
+    def testRemoveLowSideOkEmpty(self):
+        result = Result()
+        result.removeLowestSide()
+        self.assertEqual(len(result.sides), 0)
 
 class TestAttackWithResult(unittest.TestCase):
     def setUp(self):
@@ -155,9 +191,9 @@ class TestAttackWithResult(unittest.TestCase):
         self.testObj.generateResult()
 
         self.assertIsInstance(upgrade.rolledDie[0], AllHits)
-        self.assertIsInstance(upgrade.rolledSide[0], Hit)
+        self.assertTrue(checkSides(upgrade.rolledSide[0], Hit()))
         self.assertIsInstance(upgrade.rolledDie[1], AllCrits)
-        self.assertIsInstance(upgrade.rolledSide[1], Crit)
+        self.assertTrue(checkSides(upgrade.rolledSide[1], Crit()))
 
     def testAddUpgradeCanModifyResult(self):
         upgrade = FakeUpgrade()
@@ -201,33 +237,27 @@ class FakeUpgrade(object):
         return result
 
 class TestDualTurbo(unittest.TestCase):
+    def setUp(self):
+        self.random = FakeRandom()
+        DiceRandom.instance = self.random
+
     def testDiceAdded(self):
-        testObj = DualTurbo()
-        self.assertIsInstance(testObj.modifyDice([])[0], Red)
-
-    def testLowDieDropped(self):
-        self.checkDrop(Crit(), Hit(), 1, True)
-        self.checkDrop(Miss(), Hit(), 1, False)
-        self.checkDrop(Miss(), Acc(), 0, False)
-        self.checkDrop(Double(), Hit(), 2, False)
-        self.checkDrop(Double(), HitCrit(), 2, True)
-
-    def checkDrop(self, sideOne, sideTwo, damage, crit):
+        self.choice = 1
         testObj = DualTurbo()
         result = Result()
-        result.add(sideOne)
-        result.add(sideTwo)
+        result.add(Red(), Miss())
         result = testObj.modifyResult(result)
-        self.assertEqual(result.totalDamage(), damage)
-        self.assertEqual(result.hasCrit(), crit)
+
+        self.assertEqual(len(result.sides[Red()]), 1)
 
 class TestH9(unittest.TestCase):
     def testHitInAccOut(self):
         testObj = H9()
         result = Result()
-        result.add(Hit())
+        result.add(Blue(), Hit())
         testObj.modifyResult(result)
         self.assertEqual(result.accuracyCount(), 1)
+        self.assertEqual(result.totalDamage(), 0)
 
 class TestResults(unittest.TestCase):
     def setUp(self):
