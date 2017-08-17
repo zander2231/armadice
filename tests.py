@@ -16,20 +16,31 @@ def checkSides(sideOne, sideTwo):
     equal = equal and sideOne.good == sideTwo.good
     return equal
 
+def checkModifyResult(test, damage, acc, crit):
+    result = test.testObj.modifyResult(test.result)
+    test.assertEqual(result.totalDamage(), damage)
+    test.assertEqual(result.accuracyCount(), acc)
+    test.assertEqual(result.hasCrit(), crit)
+
+def setupRandom():
+    random = FakeRandom()
+    DiceRandom.instance = random
+    return random
+
 class AllHits(Die):
     def __init__(self):
         Die.__init__(self)
-        self.sides = [ Hit(), Hit(),Hit(), Hit(),Hit(), Hit(),Hit(), Hit()]
+        self.sides = [ Hit, Hit,Hit, Hit,Hit, Hit,Hit, Hit]
 
 class AllCrits(Die):
     def __init__(self):
         Die.__init__(self)
-        self.sides = [ Crit(), Crit(),Crit(), Crit(),Crit(), Crit(),Crit(), Crit()]
+        self.sides = [ Crit, Crit,Crit, Crit,Crit, Crit,Crit, Crit]
 
 class AllAcc(Die):
     def __init__(self):
         Die.__init__(self)
-        self.sides = [ Acc(), Acc(),Acc(), Acc(),Acc(), Acc(),Acc(), Acc()]
+        self.sides = [ Acc, Acc,Acc, Acc,Acc, Acc,Acc, Acc]
 
 class HalfCrits(Die):
     def __init__(self):
@@ -45,9 +56,7 @@ class HalfCrits(Die):
 
 class TestRedDice(unittest.TestCase):
     def setUp(self):
-        self.random = FakeRandom()
-        DiceRandom.instance = self.random
-
+        self.random = setupRandom()
         self.die = Red()
 
     def getAverage(self):
@@ -59,6 +68,13 @@ class TestRedDice(unittest.TestCase):
     def testChooseSide(self):
         self.random.choice = 0
         self.assertTrue(checkSides(self.die.chooseSide(), Hit()))
+
+    def testChangeSideAfterRoll(self):
+        self.random.choice = 0
+        sideOne = self.die.chooseSide()
+        sideOne.setTo(Miss())
+        sideTwo = self.die.chooseSide()
+        self.assertNotEqual(sideOne, sideTwo)
 
 class TestBlueDice(TestRedDice):
     def setUp(self):
@@ -130,9 +146,7 @@ class TestResult(unittest.TestCase):
 
 class TestAttackWithResult(unittest.TestCase):
     def setUp(self):
-        self.random = FakeRandom()
-        DiceRandom.instance = self.random
-
+        self.random = setupRandom()
         self.testObj = Attack()
 
     def testAttackWithNoDice(self):
@@ -201,8 +215,7 @@ class FakeUpgrade(object):
 
 class TestDualTurbo(unittest.TestCase):
     def setUp(self):
-        self.random = FakeRandom()
-        DiceRandom.instance = self.random
+        self.random = setupRandom()
 
     def testDiceAdded(self):
         self.choice = 1
@@ -214,13 +227,59 @@ class TestDualTurbo(unittest.TestCase):
         self.assertEqual(len(result.sides[Red()]), 1)
 
 class TestH9(unittest.TestCase):
-    def testHitInAccOut(self):
-        testObj = H9()
-        result = Result()
-        result.add(Blue(), Hit())
-        testObj.modifyResult(result)
-        self.assertEqual(result.accuracyCount(), 1)
-        self.assertEqual(result.totalDamage(), 0)
+    def setUp(self):
+        self.testObj = H9()
+        self.result = Result()
+
+    def testBlueHit(self):
+        self.result.add(Blue(), Hit())
+        checkModifyResult(self, 0,1,False)
+
+    def testRedCritChanged(self):
+        self.result.add(Red(), Crit())
+        checkModifyResult(self, 0,1,False)
+
+    def testBlackDiceNotAffected(self):
+        self.result.add(Black(), Hit())
+        checkModifyResult(self, 1,0,False)
+
+    def testNothingIfAlreadyAcc(self):
+        self.result.add(Blue(), Hit())
+        self.result.add(Blue(), Acc())
+        checkModifyResult(self, 1,1,False)
+
+    def testPreferToChangeHits(self):
+        self.result.add(Blue(), Crit())
+        self.result.add(Blue(), Hit())
+        checkModifyResult(self, 1,1,True)
+
+    def testPreferToHitsToDoubles(self):
+        self.result.add(Red(), Double())
+        self.result.add(Blue(), Hit())
+        checkModifyResult(self, 2,1,False)
+
+class TestOrdanenceExp(unittest.TestCase):
+    def setUp(self):
+        self.testObj = OrdinanceExp()
+        self.result = Result()
+
+    def testEmptyOk(self):
+        checkModifyResult(self, 0, 0, False)
+
+    def testRedNotChanged(self):
+        self.result.add(Red(), Miss())  
+        checkModifyResult(self, 0, 0, False)
+
+    def testBlackHitCritNotRerolled(self):
+        self.result.add(Black(), Hit())
+        self.result.add(Black(), HitCrit())
+        checkModifyResult(self, 3, 0, True)
+
+    def testMissRerolled(self):
+        random = setupRandom()
+        random.choice = 0
+        self.result.add(Black(), Miss())
+        checkModifyResult(self, 1, 0, False)
 
 class TestResults(unittest.TestCase):
     def setUp(self):
