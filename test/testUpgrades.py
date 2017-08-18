@@ -2,6 +2,48 @@ import unittest
 from utils import *
 from src.upgrade import *
 
+def checkModifyResult(test, damage, acc, crit):
+    result = test.testObj.modifyResult(test.result)
+    test.assertEqual(result.totalDamage(), damage)
+    test.assertEqual(result.accuracyCount(), acc)
+    test.assertEqual(result.hasCrit(), crit)
+
+class TestReroll(unittest.TestCase):
+    def setUp(self):
+        self.random = setupRandom()
+        self.testObj = Reroll()
+        self.result = Result()
+
+    def testMissRerolled(self):
+        self.result.add(Red(), Miss())
+        checkModifyResult(self, 1,0,False)
+
+    def testAccRerolled(self):
+        self.result.add(Red(), Acc())
+        self.result.add(Red(), Acc())
+        checkModifyResult(self, 1,1,False)
+
+    def testAccKeptIfTheOnlyOne(self):
+        self.result.add(Red(), Acc())
+        checkModifyResult(self, 0,1,False)
+
+    def testHitKept(self):
+        self.result.add(Red(), Hit())
+        checkModifyResult(self, 1,0,False)
+
+    def testDoubleKept(self):
+        self.result.add(Red(), Double())
+        checkModifyResult(self, 2,0,False)
+
+    def testCritKept(self):
+        self.result.add(Red(), Crit())
+        checkModifyResult(self, 1,0,True)
+
+    def testHitCritKept(self):
+        self.result.add(Black(), HitCrit())
+        checkModifyResult(self, 2,0,True)
+
+
 class TestDualTurbo(unittest.TestCase):
     def setUp(self):
         self.random = setupRandom()
@@ -14,6 +56,11 @@ class TestDualTurbo(unittest.TestCase):
         result = testObj.modifyResult(result)
 
         self.assertEqual(len(result.sides[Red()]), 1)
+
+class TestSW7(unittest.TestCase):
+    def setUp(self):
+        self.testObj = SW7()
+        self.result = Result()
 
 class TestH9(unittest.TestCase):
     def setUp(self):

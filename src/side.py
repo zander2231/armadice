@@ -23,6 +23,8 @@ class Side(object):
         self.good = side.good
         self.type = side.type
 
+    def __eq__(self, other):
+        return self.type == other.type
     def __str__(self):
         return self.type
     def __repr__(self):

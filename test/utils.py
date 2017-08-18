@@ -15,12 +15,6 @@ def checkSides(sideOne, sideTwo):
     equal = equal and sideOne.good == sideTwo.good
     return equal
 
-def checkModifyResult(test, damage, acc, crit):
-    result = test.testObj.modifyResult(test.result)
-    test.assertEqual(result.totalDamage(), damage)
-    test.assertEqual(result.accuracyCount(), acc)
-    test.assertEqual(result.hasCrit(), crit)
-
 def setupRandom():
     random = FakeRandom()
     DiceRandom.instance = random

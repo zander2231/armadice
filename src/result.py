@@ -30,6 +30,17 @@ class Result(object):
         return False
 
     def removeLowestSide(self):
+        lowDie, lowSides = self.getLowestSides()
+
+        if lowDie is not None:
+            del lowSides[0]
+            self.sides[lowDie] = lowSides
+
+    def getLowest(self):
+        lowDie, lowSides = self.getLowestSides()
+        return lowDie, lowSides[0]
+
+    def getLowestSides(self):
         lowDie = None
         lowSides = [HitCrit()]
 
@@ -39,9 +50,8 @@ class Result(object):
                 lowDie = die
                 lowSides = std
 
-        if lowDie is not None:
-            del lowSides[0]
-            self.sides[lowDie] = lowSides
+        return lowDie, lowSides
+
 
     def accuracyCount(self):
         total = 0

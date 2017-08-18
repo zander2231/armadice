@@ -6,7 +6,13 @@ class Upgrade(object):
         return result
 
 class Reroll(Upgrade):
-    pass
+    def modifyResult(self, result):
+        lowdie, lowside = result.getLowest()
+        if lowside == Miss():
+            lowside.setTo(lowdie.chooseSide())
+        if lowside == Acc() and result.accuracyCount() > 1:
+            lowside.setTo(lowdie.chooseSide())
+        return result
 
 class TRC(Upgrade):
     pass
