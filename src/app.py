@@ -9,4 +9,4 @@ class App(object):
         results = Results()
         n = 1000
         results.generate(n, attack)
-        PrintResults(results)
+        PrintResults(n, results)
