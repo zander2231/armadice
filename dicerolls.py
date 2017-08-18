@@ -113,6 +113,15 @@ class Upgrade(object):
     def modifyResult(self, result):
         return result
 
+class Reroll(Upgrade):
+    pass
+
+class TRC(Upgrade):
+    pass
+
+class LeadingShot(Upgrade):
+    pass
+
 class SW7(Upgrade):
     def modifyResult(self, result):
         for side in result.sides[Blue]:
@@ -284,15 +293,15 @@ def main():
     #read in command line args
     #generate attack
     attack = Attack()
-    # attack.addDie(Red(), 2)
-    # attack.addDie(Blue(), 1)
+    attack.addDie(Red(), 4)
+    # attack.addDie(Blue(), 4)
     # attack.addUpgrade(SW7())
     # attack.addUpgrade(DualTurbo())
 
-    attack.addDie(Blue(), 2)
+    # attack.addDie(Blue(), 2)
     # attack.addDie(Black(), 3)
     # attack.addUpgrade(OrdinanceExp())
-    attack.addUpgrade(H9())
+    # attack.addUpgrade(H9())
 
     #generate rolls histogram for number of iterations
     results = Results()
