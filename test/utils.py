@@ -1,4 +1,4 @@
-from dicerolls import *
+from src.dice import *
 
 class FakeRandom(object):
     def __init__(self):

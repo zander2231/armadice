@@ -1,4 +1,5 @@
 from dice import *
+from result import Result
 
 class Upgrade(object):
     def modifyResult(self, result):

@@ -1,6 +1,5 @@
 import unittest
-from dicerolls import *
-from utils import *
+from src.side import *
 
 class TestSides(unittest.TestCase):
     def testHit(self):

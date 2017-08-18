@@ -1,6 +1,6 @@
 import unittest
-from dicerolls import *
 from utils import *
+from src.results import *
 
 class HalfCrits(Die):
     def __init__(self):

@@ -5,5 +5,5 @@ def PrintResults(results):
 
     print "Dam results crit  acc"
     for damage, count in results.damages.items():
-        percentHit = count/n
+        percentHit = count/1000
         print "{!s:2}:     {:3.0%} {:4.0%} {:4.0%}  ".format(damage, percentHit, percentCrit[damage], percentAcc[damage]) + "X"*int(percentHit*100)

@@ -1,6 +1,6 @@
 import unittest
-from dicerolls import *
 from utils import *
+from src.attacks import *
 
 class FakeUpgrade(object):
     def __init__(self):

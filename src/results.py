@@ -1,3 +1,5 @@
+from attacks import *
+
 class Results(object):
     def __init__(self):
         self.damages = {}

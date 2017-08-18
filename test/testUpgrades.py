@@ -1,6 +1,6 @@
 import unittest
-from dicerolls import *
 from utils import *
+from src.upgrade import *
 
 class TestDualTurbo(unittest.TestCase):
     def setUp(self):
