@@ -2,9 +2,14 @@
     "folders":
     [
         {
-            "path": ".",
+            "path": "test",
             "name": "src",        
+        },
+            {
+            "path": "src",
+            "name": "test",        
         }
+
     ],
     "build_systems":
     [
