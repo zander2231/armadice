@@ -3,11 +3,11 @@
     [
         {
             "path": "test",
-            "name": "src",        
+            "name": "test",        
         },
             {
             "path": "src",
-            "name": "test",        
+            "name": "src",        
         }
 
     ],
