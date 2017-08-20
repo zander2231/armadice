@@ -39,9 +39,9 @@ class TRC(Upgrade):
                 lowside = side
 
         damage = result.totalDamage()
-        if damage == 2:
+        if damage <= 2:
             lowside.setTo(Double())
-        elif damage/2 == 0:
+        elif damage%2 == 0:
             lowside.setTo(Crit())
         else:
             lowside.setTo(Double())
