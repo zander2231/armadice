@@ -29,6 +29,14 @@ class Side(object):
         return self.type
     def __repr__(self):
         return self.__str__()
+    def __cmp__(self, other):
+        if self.good == other.good:
+            return 0
+        if self.good > other.good:
+            return 1
+        else:
+            return -1
+
 
 def Miss():
     side = Side()

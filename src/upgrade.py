@@ -32,7 +32,21 @@ class Reroll(Upgrade):
         return result
 
 class TRC(Upgrade):
-    pass
+    def modifyResult(self, result):
+        lowside = Double()
+        for side in result.getAll(Red()):
+            if side < lowside:
+                lowside = side
+
+        damage = result.totalDamage()
+        if damage == 2:
+            lowside.setTo(Double())
+        elif damage/2 == 0:
+            lowside.setTo(Crit())
+        else:
+            lowside.setTo(Double())
+
+        return result
 
 class LeadingShot(Upgrade):
     pass
