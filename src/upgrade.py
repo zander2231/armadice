@@ -5,6 +5,23 @@ class Upgrade(object):
     def modifyResult(self, result):
         return result
 
+def addUpgradeTo(attack, name):
+    name = name.lower()
+    if name == "reroll":
+        attack.addUpgrade(Reroll())
+    if name == "trc":
+        attack.addUpgrade(TRC())
+    if name == "leadingshot":
+        attack.addUpgrade(LeadingShot())
+    if name == "sw7":
+        attack.addUpgrade(SW7())
+    if name == "dualturbo":
+        attack.addUpgrade(DualTurbo())
+    if name == "ordinanceexp":
+        attack.addUpgrade(OrdinanceExp())
+    if name == "h9":
+        attack.addUpgrade(H9())
+
 class Reroll(Upgrade):
     def modifyResult(self, result):
         lowdie, lowside = result.getLowest()
@@ -22,7 +39,7 @@ class LeadingShot(Upgrade):
 
 class SW7(Upgrade):
     def modifyResult(self, result):
-        for side in result.sides[Blue]:
+        for side in result.getAll(Blue()):
             if side.damage() == 0:
                 side.setTo(Hit())
         return result
