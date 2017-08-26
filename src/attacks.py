@@ -25,3 +25,9 @@ class Attack(object):
 
     def addUpgrade(self, upgrade):
         self.upgrades.append(upgrade)
+
+    def averageDamage(self):
+        average = 0
+        for die in self.dice:
+            average += die.averageDamage()
+        return average

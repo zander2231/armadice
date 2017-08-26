@@ -62,6 +62,17 @@ class TestSW7(unittest.TestCase):
         self.testObj = SW7()
         self.result = Result()
 
+    def testBluesAreChanged(self):
+        self.result.add(Blue(), Acc())
+        self.result.add(Blue(), Acc())
+        self.result.add(Blue(), Acc())
+        checkModifyResult(self, 3,0,False)
+
+    def testHitsAndOtherDiceNotChanged(self):
+        self.result.add(Blue(), Crit())
+        self.result.add(Red(), Acc())
+        checkModifyResult(self, 1,1,True)
+
 class TestH9(unittest.TestCase):
     def setUp(self):
         self.testObj = H9()

@@ -9,10 +9,16 @@ class Result(object):
             self.sides[die] = []
         self.sides[die].append(side)
 
-    def getAll(self, die):
+    def getSides(self, die):
         if die not in self.sides.keys():
             return []
         return self.sides[die]
+
+    def getAll(self):
+        joined = []
+        for sides in self.sides:
+            joined.extend(sides)
+        return joined
 
     def totalDamage(self):
         total = 0

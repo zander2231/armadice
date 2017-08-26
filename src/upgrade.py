@@ -34,7 +34,7 @@ class Reroll(Upgrade):
 class TRC(Upgrade):
     def modifyResult(self, result):
         lowside = Double()
-        for side in result.getAll(Red()):
+        for side in result.getSides(Red()):
             if side < lowside:
                 lowside = side
 
@@ -49,11 +49,18 @@ class TRC(Upgrade):
         return result
 
 class LeadingShot(Upgrade):
-    pass
+    def modifyResult(self, result):
+        if len(result.getSides(Blue())) <= 0:
+            return result
+
+        for side in result.getAll():
+            if side == Miss():
+                side.setTo(Hit())
+        return result
 
 class SW7(Upgrade):
     def modifyResult(self, result):
-        for side in result.getAll(Blue()):
+        for side in result.getSides(Blue()):
             if side.damage() == 0:
                 side.setTo(Hit())
         return result
@@ -66,7 +73,7 @@ class DualTurbo(Upgrade):
 
 class OrdinanceExp(Upgrade):
     def modifyResult(self, result):
-        for side in result.getAll(Black()):
+        for side in result.getSides(Black()):
             if side.damage() == 0:
                 side.setTo(Black().chooseSide())
         return result
@@ -76,7 +83,7 @@ class H9(Upgrade):
         if result.accuracyCount() > 0:
             return result
 
-        sides = result.getAll(Red()) + result.getAll(Blue())
+        sides = result.getSides(Red()) + result.getSides(Blue())
         foundSide = Miss()
         for side in sides:
             if side.damage() > 0:

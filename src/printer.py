@@ -1,4 +1,7 @@
 
+def PrintAverages(attack):
+	print "Average damage before upgrades: {!s}".format(attack.averageDamage())
+
 def PrintResults(n, results):
     percentCrit = results.percentCrit()
     percentAcc = results.percentAcc()
